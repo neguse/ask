@@ -18,7 +18,7 @@ const usage = `usage:
   ask init --inbox OWNER/REPO --responder LOGIN [--timeout 10m]
   ask create --title TITLE [--question Q] [--context C] [--choice X]...
              [--json] [--wait] [--timeout 8m]
-  ask "QUESTION" [--context C] [--json] [--wait] [--timeout 8m]
+  ask "QUESTION" [--context C] [--choice X]... [--json] [--wait] [--timeout 8m]
   ask detail ID TEXT
   ask wait ID [--timeout 8m] [--json]
   ask show ID [--json]
@@ -139,10 +139,13 @@ func runShorthand(question string, args []string) error {
 		Timeout:  8 * time.Minute,
 	}
 	fs := newFlagSet("create")
+	var choices stringListFlag
+	fs.Var(&choices, "choice", "answer choice (repeatable)")
 	addCreateFlags(fs, &in)
 	if fs.Parse(args) != nil || fs.NArg() != 0 || strings.TrimSpace(question) == "" || in.Timeout < 0 {
 		return errUsage
 	}
+	in.Choices = []string(choices)
 	cfg, err := ask.LoadConfig()
 	if err != nil {
 		return err
